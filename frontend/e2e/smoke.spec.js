@@ -25,19 +25,6 @@ test('signup -> confirm -> signin -> create post -> logout', async ({ page }) =>
   const email = `e2e.smoke.${ts}@example.com`;
   const password = 'Test@1234';
 
-  // Diagnostic only — prints straight into the CI text log (unlike the
-  // trace.zip artifact, which needs a manual download), so a failure's
-  // actual network/console evidence is visible without a round trip.
-  page.on('console', (msg) => console.log(`[browser ${msg.type()}]`, msg.text()));
-  page.on('requestfailed', (req) => console.log('[request failed]', req.url(), req.failure()?.errorText));
-  page.on('response', async (res) => {
-    if (res.url().includes('/api/v1/auth/')) {
-      let body = '';
-      try { body = await res.text(); } catch { /* ignore */ }
-      console.log('[api response]', res.status(), res.url(), body.slice(0, 500));
-    }
-  });
-
   await page.goto('/sign-up');
   await page.getByLabel('First Name').fill('E2E');
   await page.getByLabel('Last Name').fill('Smoke');

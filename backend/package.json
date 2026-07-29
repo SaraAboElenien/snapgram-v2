@@ -1,7 +1,7 @@
 {
-  "name": "socialmediaapp",
+  "name": "snapgram-backend",
   "version": "1.0.0",
-  "description": "A social media application built with Node.js and Express.",
+  "description": "Snapgram backend — Node.js/Express/MongoDB API with real-time chat, stories, and notifications.",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -15,7 +15,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@sentry/node": "^10.68.0",
     "bcrypt": "^6.0.0",

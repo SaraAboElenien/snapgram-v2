@@ -10,6 +10,7 @@
 ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white)
 ![Socket.io](https://img.shields.io/badge/Socket.io-real--time-black?logo=socket.io&logoColor=white)
 ![WCAG](https://img.shields.io/badge/WCAG_2.1-AA-6C5FEC)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 </div>
 
@@ -216,3 +217,7 @@ Verified against WCAG 2.1 AA using an automated `axe-core` audit across every au
 
 - Structured JSON request logging with a correlation ID per request (echoed back as `X-Request-Id`)
 - Real-time error tracking (backend + frontend) via Sentry, wired into every unhandled exception, unhandled promise rejection, and 5xx response
+
+## 📄 License
+
+MIT — see [LICENSE](LICENSE).
