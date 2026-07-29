@@ -85,5 +85,19 @@ jobs:
           defaultProfilePic=${{ secrets.DEFAULT_PROFILE_PIC }}
           defaultpuplicPic=${{ secrets.DEFAULT_PROFILE_PUBLIC_ID }}
           EOF
+      # frontend/.env is gitignored (real local dev files carry no secrets
+      # here, just the backend URL) so it doesn't exist in a fresh checkout.
+      # Without it, axios.js's baseURL is undefined and every API call
+      # resolves as a relative URL against the frontend's own origin
+      # (:5173) instead of the backend (:3000) — a 404 with no CORS error,
+      # not a backend problem. VITE_API_URL_PRO is unused in `npm run dev`
+      # (import.meta.env.DEV is true) but set for completeness.
+      - name: Write frontend/.env
+        working-directory: frontend
+        run: |
+          cat > .env << EOF
+          VITE_API_URL_DEV=http://localhost:3000
+          VITE_API_URL_PRO=http://localhost:3000
+          EOF
       - run: npm run test:e2e
         working-directory: frontend
