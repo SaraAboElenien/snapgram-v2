@@ -34,7 +34,7 @@ export const signUp = asyncHandler(async (req, res, next) => {
         const checkEmail = await sendEmail(email, "Confirm email address", `<a href='${confirmationLink}'> Confirm your email</a> <br>
           <a href='${confirmationLinkRefresher}'> Click to resend the link</a>  `)
         if (!checkEmail) {
-            next(new AppError("Failed to send email", 409))
+            return next(new AppError("Failed to send email", 409))
         }
         const hashedPassword = await hash(password, parseInt(process.env.saltRounds));
         const newUser = {
