@@ -6,9 +6,13 @@ const isTest = process.env.NODE_ENV === 'test';
 
 // Pretty-printed console output only in local dev; real newline-delimited
 // JSON everywhere else (production logs get shipped/grepped as JSON, tests
-// stay silent so `npm test` output isn't drowned in request logs).
+// stay quiet at 'error' so `npm test`/E2E output isn't drowned in routine
+// per-request info logs — but a genuine 500 still surfaces. Fully silencing
+// this (as an earlier version did) meant a real backend error during the
+// E2E CI job left zero trace anywhere, the exact gap that made ADR-030's
+// CI failure take two extra round-trips to diagnose.
 export const logger = pino({
-  level: isTest ? 'silent' : (process.env.LOG_LEVEL || 'info'),
+  level: isTest ? 'error' : (process.env.LOG_LEVEL || 'info'),
   redact: {
     paths: [
       'req.headers.authorization',
