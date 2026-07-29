@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-tests:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      # No secrets needed — mongodb-memory-server provides an ephemeral,
+      # real MongoDB instance, and backend/config/.env.test (committed,
+      # dummy values only) supplies everything else the app boots with.
+      - run: npm test
+        working-directory: backend
+
+  frontend-tests:
+    name: Frontend tests + build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run lint
+        working-directory: frontend
+      - run: npm test
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+
+  e2e-tests:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    # Unlike the two jobs above, this one exercises the real backend against
+    # real third-party services (Cloudinary for the post-image upload, Gmail
+    # for the signup confirmation email) — mongodb-memory-server still keeps
+    # the database itself ephemeral/self-contained, but these specific
+    # secrets must exist in this repo's Actions secrets before this job can
+    # pass. See TESTING_CI_SCOPE.md's "CI" section for why this is a known,
+    # accepted limitation of true E2E testing rather than an oversight.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm ci
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - name: Write backend/config/.env from secrets
+        working-directory: backend
+        run: |
+          cat > config/.env << EOF
+          saltRounds=${{ secrets.SALT_ROUNDS }}
+          sessionKey=${{ secrets.SESSION_KEY }}
+          confirmationKey=${{ secrets.CONFIRMATION_KEY }}
+          confirmationKeyRefresher=${{ secrets.CONFIRMATION_KEY_REFRESHER }}
+          sendEmail=${{ secrets.SEND_EMAIL }}
+          emailPassword=${{ secrets.EMAIL_PASSWORD }}
+          CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
+          defaultProfilePic=${{ secrets.DEFAULT_PROFILE_PIC }}
+          defaultpuplicPic=${{ secrets.DEFAULT_PROFILE_PUBLIC_ID }}
+          EOF
+      - run: npm run test:e2e
+        working-directory: frontend
